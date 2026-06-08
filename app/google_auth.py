@@ -1,7 +1,8 @@
 # app/google_auth.py — OAuth flow + encrypted token storage.
 #
-# Least-privilege scopes first. gmail.send / calendar.events are intentionally
-# commented out until Phase 4, so for most of the build the app *cannot* send.
+# Scopes follow least privilege: read + compose are always present; the write
+# powers (gmail.send / calendar.events) are exercised only from the approval
+# queue, never by the agent itself.
 import json
 
 from cryptography.fernet import Fernet
@@ -17,8 +18,8 @@ SCOPES = [
     "https://www.googleapis.com/auth/gmail.readonly",   # read mail/threads
     "https://www.googleapis.com/auth/gmail.compose",    # create drafts (NOT send)
     "https://www.googleapis.com/auth/calendar.readonly",  # read calendar / free-busy
-    # Phase 4 — the gated action powers. These only ever execute from the
-    # approval queue, after explicit human approval.
+    # Gated action powers — exercised only from the approval queue, after
+    # explicit human approval. The agent never calls these directly.
     "https://www.googleapis.com/auth/gmail.send",       # send approved drafts
     "https://www.googleapis.com/auth/calendar.events",  # create approved events
 ]

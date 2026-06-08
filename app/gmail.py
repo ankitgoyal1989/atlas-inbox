@@ -1,7 +1,7 @@
 # app/gmail.py — a thin wrapper over the Gmail API.
 #
 # create_draft needs only gmail.compose. send_draft is separated out and is
-# only ever called from the approval queue (Phase 4, gmail.send scope).
+# only ever called from the approval queue (requires the gmail.send scope).
 import base64
 from email.mime.text import MIMEText
 
@@ -145,7 +145,7 @@ def update_draft(
 
 
 def send_draft(user_id: str, draft_id: str) -> dict:
-    """PHASE 4 ONLY — requires gmail.send. Called solely from the approval queue."""
+    """Send a draft. Requires gmail.send. Called solely from the approval queue."""
     return (
         _svc(user_id)
         .users()

@@ -122,7 +122,7 @@ def create_event(
     end_iso: str,
     attendees: list[str],
 ) -> dict:
-    """PHASE 4 ONLY — requires calendar.events. Called only from the queue.
+    """Create an event. Requires calendar.events. Called only from the queue.
 
     A timeZone is attached so Google interprets the time correctly even if the
     incoming timestamp lacks an explicit offset.
