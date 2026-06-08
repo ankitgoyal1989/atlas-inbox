@@ -1,0 +1,36 @@
+# Atlas Inbox — runtime dependencies.
+# Pin minor versions in your own fork; these are floors known to work together.
+
+# Web service
+fastapi>=0.110
+uvicorn[standard]>=0.29
+pydantic>=2.6
+pydantic-settings>=2.2
+
+# OpenAI: LLM, embeddings, and the Agents SDK
+openai>=1.40
+openai-agents>=0.0.1
+
+# Google APIs (Gmail + Calendar) + OAuth
+google-api-python-client>=2.120
+google-auth>=2.29
+google-auth-oauthlib>=1.2
+
+# Database + vectors
+psycopg[binary,pool]>=3.1
+pgvector>=0.2.5
+
+# Token encryption at rest
+cryptography>=42.0
+
+# Observability — Langfuse via OpenTelemetry + OpenInference instrumentation.
+# The instrumentor bridges the OpenAI Agents SDK trace pipeline into OTel so
+# spans actually reach Langfuse (langfuse>=2 alone does NOT wire this up).
+langfuse>=3.0
+openinference-instrumentation-openai-agents>=0.1.0
+opentelemetry-sdk>=1.25
+opentelemetry-exporter-otlp-proto-http>=1.25
+
+# UI client
+streamlit>=1.33
+requests>=2.31

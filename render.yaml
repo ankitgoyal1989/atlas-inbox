@@ -1,0 +1,78 @@
+# render.yaml — the entire deployment, declared in one file.
+# Push to GitHub, then in Render: New > Blueprint, point at the repo.
+databases:
+  - name: atlas-db
+    plan: starter
+    postgresMajorVersion: "16"   # enable pgvector via: CREATE EXTENSION vector;
+
+services:
+  - type: web
+    name: atlas-inbox-api
+    runtime: python
+    plan: starter
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.api:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /healthz
+    autoDeploy: true             # deploy on push to main
+    envVars:
+      - key: OPENAI_API_KEY
+        sync: false              # set in dashboard (env group)
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_REDIRECT_URI
+        sync: false
+      - key: TOKEN_ENC_KEY
+        sync: false              # Fernet key for encrypting OAuth tokens
+      - key: LANGFUSE_PUBLIC_KEY
+        sync: false
+      - key: LANGFUSE_SECRET_KEY
+        sync: false
+      - key: DATABASE_URL
+        fromDatabase:
+          name: atlas-db
+          property: connectionString
+
+  - type: web                    # Streamlit approval-queue + chat UI
+    name: atlas-inbox-ui
+    runtime: python
+    plan: starter
+    buildCommand: pip install -r requirements.txt
+    startCommand: streamlit run ui/app.py --server.port $PORT --server.address 0.0.0.0
+    envVars:
+      - key: ATLAS_API_BASE
+        # The UI calls the API over HTTPS. Render exposes the API's host here;
+        # set the full https URL in the dashboard if your code needs the scheme.
+        fromService:
+          name: atlas-inbox-api
+          type: web
+          property: host
+      - key: ATLAS_DEFAULT_USER_ID
+        value: me
+
+  - type: worker                 # inbox sync (long-running consumer)
+    name: atlas-inbox-sync
+    runtime: python
+    plan: starter
+    buildCommand: pip install -r requirements.txt
+    startCommand: python -m worker.sync
+    envVars:
+      - fromGroup: atlas-secrets
+      - key: DATABASE_URL
+        fromDatabase:
+          name: atlas-db
+          property: connectionString
+
+  - type: cron                   # nightly style-corpus refresh
+    name: atlas-style-refresh
+    runtime: python
+    schedule: "0 3 * * *"        # 03:00 daily
+    buildCommand: pip install -r requirements.txt
+    startCommand: python -m worker.sync --refresh-style
+    envVars:
+      - fromGroup: atlas-secrets
+      - key: DATABASE_URL
+        fromDatabase:
+          name: atlas-db
+          property: connectionString

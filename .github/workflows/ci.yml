@@ -1,0 +1,27 @@
+# .github/workflows/ci.yml — tests + the eval gate. A regression blocks deploy.
+name: ci
+
+on: [push, pull_request]
+
+jobs:
+  test-and-eval:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt -r requirements-dev.txt
+
+      - name: Lint
+        run: ruff check .
+
+      - name: Unit tests
+        run: pytest tests/
+
+      - name: Evaluation gate
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY_CI }}
+        run: python -m eval.run --dataset eval/golden.jsonl --min-pass 0.85
+
+# Render auto-deploys on merge to main once this passes.
