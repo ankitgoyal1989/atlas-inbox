@@ -2,7 +2,7 @@
 
 **A Gmail + Calendar productivity copilot that drafts replies in your voice and proposes meeting times — and never sends or schedules anything without your explicit approval.**
 
-[![CI](https://github.com/ankitgoyal1989/atlas-inbox/actions/workflows/ci.yml/badge.svg)](https://github.com/ankitgoyal1989/atlas-inbox/actions/workflows/ci.yml)
+[![CI](https://github.com/ankitgoyal1989/atlas-inbox/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/ankitgoyal1989/atlas-inbox/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/python-3.12-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
