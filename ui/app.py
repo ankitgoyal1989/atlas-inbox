@@ -43,28 +43,39 @@ with chat_col:
     st.subheader("Chat")
     if "history" not in st.session_state:
         st.session_state.history = []
+    if "pending" not in st.session_state:
+        st.session_state.pending = None
 
+    # 1. Render the full conversation so far (includes the just-submitted question).
     for role, text in st.session_state.history:
         with st.chat_message(role):
             st.markdown(text)
 
+    # 2. If there's an unanswered user message, show the thinking spinner *here*
+    #    (above the input, right after the question) and call the API.
+    if st.session_state.pending:
+        with st.chat_message("assistant"):
+            with st.spinner("Thinking…"):
+                try:
+                    resp = requests.post(
+                        f"{API_BASE}/v1/chat",
+                        json={"user_id": USER_ID, "message": st.session_state.pending},
+                        timeout=120,
+                    )
+                    resp.raise_for_status()
+                    reply = resp.json().get("reply", "(no reply)")
+                except Exception as exc:
+                    reply = f"⚠️ Error: {exc}"
+        st.session_state.history.append(("assistant", reply))
+        st.session_state.pending = None
+        st.rerun()
+
+    # 3. The input box stays at the bottom. On submit, record the question and
+    #    rerun immediately so it appears before we start "Thinking…".
     _placeholder = "e.g. 'Summarize my unread mail' or 'Draft a reply to the latest thread'"
     if prompt := st.chat_input(_placeholder):
-        # Append both turns to history, then rerun so everything renders in order
-        # above the input box (instead of the new turn appearing below it).
         st.session_state.history.append(("user", prompt))
-        with st.spinner("Thinking…"):
-            try:
-                resp = requests.post(
-                    f"{API_BASE}/v1/chat",
-                    json={"user_id": USER_ID, "message": prompt},
-                    timeout=120,
-                )
-                resp.raise_for_status()
-                reply = resp.json().get("reply", "(no reply)")
-            except Exception as exc:
-                reply = f"⚠️ Error: {exc}"
-        st.session_state.history.append(("assistant", reply))
+        st.session_state.pending = prompt
         st.rerun()
 
 # --- Approval queue -----------------------------------------------------------
