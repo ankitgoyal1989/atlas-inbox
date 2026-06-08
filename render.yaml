@@ -68,11 +68,10 @@ services:
     startCommand: streamlit run ui/app.py --server.port $PORT --server.address 0.0.0.0
     envVars:
       - key: ATLAS_API_BASE
-        # The UI normalizes a bare host to https:// (see ui/app.py).
-        fromService:
-          name: atlas-inbox-api
-          type: web
-          property: host
+        # Set to the API service's PUBLIC URL after it deploys, e.g.
+        # https://atlas-inbox-api.onrender.com  (fromService 'host' returns the
+        # internal name, which isn't reachable on free-tier public services).
+        sync: false
       - key: ATLAS_DEFAULT_USER_ID
         value: me
 
