@@ -20,8 +20,7 @@ Atlas Inbox reads your unread mail and your schedule, drafts replies grounded in
 
 | | |
 |---|---|
-| Chat + approval queue | 
-<img width="687" height="501" alt="Screenshot 2026-06-08 at 4 27 44 PM" src="https://github.com/user-attachments/assets/e04d22e6-4492-4715-9be8-3cd65e58702e" /> <img width="746" height="340" alt="Screenshot 2026-06-08 at 4 22 51 PM" src="https://github.com/user-attachments/assets/917e8311-0999-4486-897f-95ad95871199" /> |
+| Chat + approval queue | <img width="687" height="501" alt="Screenshot 2026-06-08 at 4 27 44 PM" src="https://github.com/user-attachments/assets/e04d22e6-4492-4715-9be8-3cd65e58702e" />  <img width="504" height="501" alt="Screenshot 2026-06-08 at 4 32 11 PM" src="https://github.com/user-attachments/assets/697c587e-b74a-4215-94a5-90319654700c" /> |
 | An injection attempt being refused | <img width="720" height="328" alt="Screenshot 2026-06-08 at 4 28 39 PM" src="https://github.com/user-attachments/assets/d4b93248-799c-4a9c-a91c-14eab84c474b" /> |
 | A Langfuse trace of one agent run | <img width="1268" height="646" alt="Screenshot 2026-06-08 at 4 28 56 PM" src="https://github.com/user-attachments/assets/b3199155-c0f3-4225-bcba-1e4ad718a709" /> |
 
