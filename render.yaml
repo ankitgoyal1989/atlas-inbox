@@ -4,9 +4,18 @@
 # Secrets are defined ONCE in the `atlas-secrets` env group below; Render prompts
 # for each `sync: false` value during blueprint creation. Every service then
 # pulls them via `fromGroup: atlas-secrets`.
+#
+# FREE TIER: the API, UI, and Postgres run on Render's free plan. Note:
+#   - Free web services spin down after ~15 min idle (slow first request).
+#   - Free Postgres is time-limited by Render and has no automatic backups.
+#   - Background workers and cron jobs are NOT available on free — they are
+#     commented out below. Run them manually instead:
+#         python -m worker.sync                 # one-off inbox sync
+#         python -m worker.sync --refresh-style # rebuild the style corpus
+#     (or restore them and switch plans to "starter" on a paid account).
 databases:
   - name: atlas-db
-    plan: starter
+    plan: free
     postgresMajorVersion: "16"   # enable pgvector via: CREATE EXTENSION vector;
 
 envVarGroups:
@@ -31,7 +40,7 @@ services:
   - type: web
     name: atlas-inbox-api
     runtime: python
-    plan: starter
+    plan: free
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn app.api:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /healthz
@@ -54,7 +63,7 @@ services:
   - type: web                    # Streamlit approval-queue + chat UI
     name: atlas-inbox-ui
     runtime: python
-    plan: starter
+    plan: free
     buildCommand: pip install -r requirements.txt
     startCommand: streamlit run ui/app.py --server.port $PORT --server.address 0.0.0.0
     envVars:
@@ -67,32 +76,37 @@ services:
       - key: ATLAS_DEFAULT_USER_ID
         value: me
 
-  - type: worker                 # inbox sync (long-running consumer)
-    name: atlas-inbox-sync
-    runtime: python
-    plan: starter
-    buildCommand: pip install -r requirements.txt
-    startCommand: python -m worker.sync
-    envVars:
-      - fromGroup: atlas-secrets
-      - key: ATLAS_TIMEZONE
-        value: Asia/Kolkata
-      - key: DATABASE_URL
-        fromDatabase:
-          name: atlas-db
-          property: connectionString
-
-  - type: cron                   # nightly style-corpus refresh
-    name: atlas-style-refresh
-    runtime: python
-    schedule: "0 3 * * *"        # 03:00 daily
-    buildCommand: pip install -r requirements.txt
-    startCommand: python -m worker.sync --refresh-style
-    envVars:
-      - fromGroup: atlas-secrets
-      - key: ATLAS_TIMEZONE
-        value: Asia/Kolkata
-      - key: DATABASE_URL
-        fromDatabase:
-          name: atlas-db
-          property: connectionString
+  # --- Paid-plan only: background worker + cron (Render free tier excludes these).
+  # Uncomment and set plan: starter on a paid account to enable automatic inbox
+  # sync and nightly style-corpus refresh.
+  #
+  # - type: worker                 # inbox sync (long-running consumer)
+  #   name: atlas-inbox-sync
+  #   runtime: python
+  #   plan: starter
+  #   buildCommand: pip install -r requirements.txt
+  #   startCommand: python -m worker.sync
+  #   envVars:
+  #     - fromGroup: atlas-secrets
+  #     - key: ATLAS_TIMEZONE
+  #       value: Asia/Kolkata
+  #     - key: DATABASE_URL
+  #       fromDatabase:
+  #         name: atlas-db
+  #         property: connectionString
+  #
+  # - type: cron                   # nightly style-corpus refresh
+  #   name: atlas-style-refresh
+  #   runtime: python
+  #   plan: starter
+  #   schedule: "0 3 * * *"        # 03:00 daily
+  #   buildCommand: pip install -r requirements.txt
+  #   startCommand: python -m worker.sync --refresh-style
+  #   envVars:
+  #     - fromGroup: atlas-secrets
+  #     - key: ATLAS_TIMEZONE
+  #       value: Asia/Kolkata
+  #     - key: DATABASE_URL
+  #       fromDatabase:
+  #         name: atlas-db
+  #         property: connectionString
