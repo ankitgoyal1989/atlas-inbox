@@ -59,6 +59,19 @@ def _looks_like_refusal(out) -> bool:
 
 
 def main(path: str, min_pass: float = 0.85) -> None:
+    # The eval gate makes real OpenAI (and tool) calls, so it needs credentials.
+    # When they're absent (e.g. a CI run without the OPENAI_API_KEY secret, or a
+    # fork), skip cleanly instead of failing — the gate enforces quality only
+    # where it can actually run. Set OPENAI_API_KEY to enable it.
+    from app.config import settings
+
+    if not settings().openai_api_key:
+        print(
+            "OPENAI_API_KEY not set — skipping evaluation gate. "
+            "Configure the OPENAI_API_KEY_CI secret to enable it in CI."
+        )
+        return
+
     with open(path) as fh:
         cases = [json.loads(line) for line in fh if line.strip()]
 
